@@ -1,0 +1,28 @@
+# Build Folders
+bin/
+obj/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio specific folders
+.vs/
+
+# Visual Studio index files
+*.vsidx
+
+# Rider specific
+.idea/
+
+# NPM packages
+node_modules/
+
+# Log files
+*.log
+
+# OS-generated files
+.DS_Store
+Thumbs.db
