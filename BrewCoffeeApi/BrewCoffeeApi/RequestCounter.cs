@@ -14,5 +14,22 @@
                 return requestCount;
             }
         }
+
+        //add a reset method for testing purposes
+        public static void Reset()
+        {
+            lock (lockObject)
+            {
+                requestCount = 0;
+            }
+        }
+
+        public static int GetCount()
+        {
+            lock (lockObject)
+            {
+                return requestCount;
+            }
+        }
     }
 }
