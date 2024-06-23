@@ -50,3 +50,5 @@ app.MapGet("/brew-coffee", (HttpContext context) =>
 
 
 app.Run();
+
+public partial class Program { }
