@@ -1,4 +1,6 @@
-﻿namespace BrewCoffeeApi
+﻿using System.Net;
+
+namespace BrewCoffeeApi
 {
     public static class BrewCoffeeUtils
     {
@@ -38,14 +40,44 @@
             }
             return apiKey;
         }
+ 
+
 
         public static async Task<string> GetWeatherDataAsync(HttpClient httpClient, string latitude, string longitude, string apiKey)
         {
             var weatherApiUrl = $"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={apiKey}";
-            var weatherResponse = await httpClient.GetStringAsync(weatherApiUrl);
-            return weatherResponse;
+
+             
+                HttpResponseMessage response = await httpClient.GetAsync(weatherApiUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    return responseBody;
+                }
+                else
+                {
+                    switch (response.StatusCode)
+                    {
+                        case HttpStatusCode.BadRequest:
+                            throw new Exception("Bad Request: The request could not be understood or was missing required parameters.");
+                        case HttpStatusCode.Unauthorized:
+                            throw new Exception("Unauthorized: Access is denied due to invalid credentials.");
+                        case HttpStatusCode.Forbidden:
+                            throw new Exception("Forbidden: You do not have permission to access this resource.");
+                        case HttpStatusCode.NotFound:
+                            throw new Exception("Not Found: The requested resource could not be found.");
+                        case HttpStatusCode.InternalServerError:
+                            throw new Exception("Internal Server Error: The server encountered an error and could not complete your request.");
+                        default:
+                            throw new Exception($"Unexpected status code: {response.StatusCode}");
+                    }
+                }
+            }
+              
+             
         }
 
 
-    }
+     
 }

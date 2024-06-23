@@ -48,7 +48,6 @@ app.MapGet("/brew-coffee", async (HttpContext context) =>
                 return Results.StatusCode(500); //this is a bit brutal tbh - possible better solution would check enablement, and when true use the getweatherdataAsync in addition to normal behaviour
             }
 
-
             var httpClient = httpClientFactory.CreateClient();
 
             // Define latitude and longitude for Point Cook, Melbourne

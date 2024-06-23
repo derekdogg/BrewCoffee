@@ -1,0 +1,66 @@
+{
+	"info": {
+		"_postman_id": "0b3cc423-9f4b-449b-8f28-27db205e9537",
+		"name": "Brew-Coffee",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24708347"
+	},
+	"item": [
+		{
+			"name": "brew-coffee",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7050/brew-coffee/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7050",
+					"path": [
+						"brew-coffee",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetWeather",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.openweathermap.org/data/2.5/weather?lat=-37.9142&lon=144.7506&appid=687c992031ce84618c8857979e8eca4d",
+					"protocol": "https",
+					"host": [
+						"api",
+						"openweathermap",
+						"org"
+					],
+					"path": [
+						"data",
+						"2.5",
+						"weather"
+					],
+					"query": [
+						{
+							"key": "lat",
+							"value": "-37.9142"
+						},
+						{
+							"key": "lon",
+							"value": "144.7506"
+						},
+						{
+							"key": "appid",
+							"value": "687c992031ce84618c8857979e8eca4d"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

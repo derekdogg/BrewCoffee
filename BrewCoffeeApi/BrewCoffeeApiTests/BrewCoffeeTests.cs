@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Http;
+ 
 using System.Net; 
 
 using BrewCoffeeApi;
@@ -136,6 +137,63 @@ namespace BrewCoffeeApiTests
         }
 
 
+        [Fact]
+        public async Task TestWeatherDataResponseWithValidAPIKey()
+        {
+            var services = new ServiceCollection();
+            services.AddHttpClient();
+
+            using var serviceProvider = services.BuildServiceProvider();
+            {
+                var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+                var httpClient = httpClientFactory.CreateClient();
+
+                // Define latitude and longitude for Point Cook, Melbourne
+                string latitude = "-37.9142";
+                string longitude = "144.7506";
+                string validApiKey = "9e73141e19c73f9886e8f2ce567a72f2";
+                var weatherResponse = await BrewCoffeeUtils.GetWeatherDataAsync(httpClient, latitude, longitude, validApiKey);
+
+                Assert.NotNull(weatherResponse);
+                Assert.Contains("main", weatherResponse);
+                Assert.Contains("temp", weatherResponse);
+
+            }
+        }
+
+        [Fact]
+        public async Task TestWeatherDataResponseThrowExceptionWithInvalidAPIKey()
+        {
+            var services = new ServiceCollection(); 
+            
+            services.AddHttpClient();
+             
+            using var serviceProvider = services.BuildServiceProvider(); 
+            {
+                var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+                var httpClient = httpClientFactory.CreateClient();
+
+                // Define latitude and longitude for Point Cook, Melbourne
+                string latitude = "-37.9142";
+                string longitude = "144.7506";
+                string invalidApiKey = "Send me data";
+
+                try
+                {
+                    await BrewCoffeeUtils.GetWeatherDataAsync(httpClient, latitude, longitude, invalidApiKey);
+                    Assert.Fail("Expected an exception to be thrown due to invalid API key, but no exception was thrown.");
+                }
+                catch (Exception ex)
+                {
+                    Assert.True(ex.Message.Contains("Unauthorized") || ex.Message.Contains("Forbidden"),
+                        $"Expected an Unauthorized or Forbidden error, but got: {ex.Message}");
+                }
+
+
+
+            }
+
+        }
 
     }
 
