@@ -1,4 +1,5 @@
 using BrewCoffeeApi;
+
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
@@ -8,30 +9,12 @@ builder.Services.AddHttpClient();
 var app = builder.Build();
 
 
-string MelbourneUTCDateTime()
-{
-   DateTimeOffset utcNow = DateTimeOffset.UtcNow;
-   TimeZoneInfo melbourneTimeZone = TimeZoneInfo.FindSystemTimeZoneById("AUS Eastern Standard Time");
-
-   DateTimeOffset melbourneTime = TimeZoneInfo.ConvertTime(utcNow, melbourneTimeZone);
-
-   return melbourneTime.ToString("yyyy-MM-ddTHH:mm:sszzz");     
-}
-
-bool IsAprilFoolsDay()
-{
-    var today = DateTime.Today;
-    return today.Month == 4 && today.Day == 1;
-}
-
-double KelvinToCelsius(double kelvin)
-{
-    return kelvin - 273.15;
-}
-
-app.MapGet("/", () => "Brew Coffee API !");
+ 
 
  
+ 
+
+app.MapGet("/", () => "Brew Coffee API !");
 
 
 app.MapGet("/brew-coffee", async (HttpContext context) =>
@@ -44,24 +27,27 @@ app.MapGet("/brew-coffee", async (HttpContext context) =>
     {
         return Results.StatusCode(503);
     }
-    else if (IsAprilFoolsDay())
+    else if (BrewCoffeeUtils.IsAprilFoolsDay(DateTime.Now))
     {
         return Results.StatusCode(418); //I'm a teapot
     }
     else
-    {
-    
+    {    
         try
         {
-
             // Read API key from configuration
-            var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
-            var apiKey = configuration["WeatherApi:ApiKey"];
 
-            if (string.IsNullOrEmpty(apiKey))
+            string apiKey;
+            try
             {
+                var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
+                apiKey = BrewCoffeeUtils.GetApiKey(configuration);
+            }
+            catch
+            {                
                 return Results.StatusCode(500); // Internal Server Error if API key is not set
             }
+
 
             var httpClient = httpClientFactory.CreateClient();
 
@@ -70,21 +56,23 @@ app.MapGet("/brew-coffee", async (HttpContext context) =>
             string longitude = "144.7506";
 
             // Call OpenWeatherMap API
-            var weatherResponse = await httpClient.GetStringAsync($"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={apiKey}");
+            var weatherResponse = await BrewCoffeeUtils.GetWeatherDataAsync(httpClient, latitude, longitude, apiKey);
 
             // Parse JSON to extract temperature
             using (JsonDocument document = JsonDocument.Parse(weatherResponse))
             {
                 double temperature = document.RootElement.GetProperty("main").GetProperty("temp").GetDouble();
                 
-                temperature = KelvinToCelsius(temperature);
+                temperature = BrewCoffeeUtils.KelvinToCelsius(temperature);
 
                 var msg = temperature > 30 ? "Your refreshing iced coffee is ready." : "Your piping hot coffee is ready.";
+
+                var melbourneDateTime = BrewCoffeeUtils.LocalUTCDateTime();
 
                 var response = new Response
                 {
                     Message = $"{msg}",
-                    Prepared = MelbourneUTCDateTime(),
+                    Prepared = BrewCoffeeUtils.FormatUTCDateTime(melbourneDateTime),
                
                 };
 
