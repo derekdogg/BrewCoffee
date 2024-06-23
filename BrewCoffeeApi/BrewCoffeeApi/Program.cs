@@ -45,7 +45,7 @@ app.MapGet("/brew-coffee", async (HttpContext context) =>
             }
             catch
             {                
-                return Results.StatusCode(500); // Internal Server Error if API key is not set
+                return Results.StatusCode(500); //this is a bit brutal tbh - possible better solution would check enablement, and when true use the getweatherdataAsync in addition to normal behaviour
             }
 
 
@@ -58,7 +58,7 @@ app.MapGet("/brew-coffee", async (HttpContext context) =>
             // Call OpenWeatherMap API
             var weatherResponse = await BrewCoffeeUtils.GetWeatherDataAsync(httpClient, latitude, longitude, apiKey);
 
-            // Parse JSON to extract temperature
+            // Parse JSON to extract temperature - probably an easier way to do this? This does get the job done though (obviously if the response changes we're doomed)
             using (JsonDocument document = JsonDocument.Parse(weatherResponse))
             {
                 double temperature = document.RootElement.GetProperty("main").GetProperty("temp").GetDouble();

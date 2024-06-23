@@ -1,7 +1,16 @@
 using Microsoft.AspNetCore.Mvc.Testing;
-using BrewCoffeeApi;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
+using System.Net; 
+
+using BrewCoffeeApi;
+
  
+using Microsoft.AspNetCore.Http;
+ 
+
+
 
 namespace BrewCoffeeApiTests
 {
@@ -11,6 +20,7 @@ namespace BrewCoffeeApiTests
         public async Task TestRootEndpoint()
         {
             await using var application = new WebApplicationFactory<Program>();
+            
             using var client = application.CreateClient();
 
             var response = await client.GetStringAsync("/");
@@ -75,6 +85,56 @@ namespace BrewCoffeeApiTests
              
             Assert.Equal("my random key", apiKey);
         }
+
+        [Fact]
+        
+        public async Task TestRequestCounterIsThreadSafe()
+        {
+            const int numberOfIncrements = 10000;
+            const int numberOfRuns = 5;
+
+            for (int run = 0; run < numberOfRuns; run++)
+            {
+               
+                RequestCounter.Reset();
+                Task[] tasks = new Task[numberOfIncrements];
+
+                
+                for (int i = 0; i < numberOfIncrements; i++)
+                {
+                    tasks[i] = Task.Run(() => RequestCounter.Increment());
+                }
+
+                await Task.WhenAll(tasks);
+
+                
+                Assert.Equal(numberOfIncrements, RequestCounter.GetCount());
+            }
+        }
+
+        [Fact]
+        public async Task TestServiceUnavailable()
+        {
+            
+            // Set the request count to 4 so the next increment will be 5
+            RequestCounter.Reset();
+            
+            for (int i = 0; i < 4; i++)
+            {
+                RequestCounter.Increment();
+            }
+
+            await using var application = new WebApplicationFactory<Program>();
+            
+            using var client = application.CreateClient();
+
+            
+            var response = await client.GetAsync("/brew-coffee");
+
+            
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        }
+
 
 
     }
