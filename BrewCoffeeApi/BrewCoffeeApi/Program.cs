@@ -8,23 +8,31 @@ builder.Services.AddHttpClient();
 var app = builder.Build();
 
 
-string GetIso8601Timestamp()
+string MelbourneUTCDateTime()
 {
-    return DateTimeOffset.UtcNow.ToString("o");
+   DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+   TimeZoneInfo melbourneTimeZone = TimeZoneInfo.FindSystemTimeZoneById("AUS Eastern Standard Time");
+
+   DateTimeOffset melbourneTime = TimeZoneInfo.ConvertTime(utcNow, melbourneTimeZone);
+
+   return melbourneTime.ToString("yyyy-MM-ddTHH:mm:sszzz");     
 }
 
-static bool IsAprilFoolsDay()
+bool IsAprilFoolsDay()
 {
-    // Return true if the month is April and the day is 1
-    return DateTime.Today.Month == 4 && DateTime.Today.Day == 1;
+    var today = DateTime.Today;
+    return today.Month == 4 && today.Day == 1;
 }
 
-static double KelvinToCelsius(double kelvin)
+double KelvinToCelsius(double kelvin)
 {
     return kelvin - 273.15;
 }
 
 app.MapGet("/", () => "Brew Coffee API !");
+
+ 
+
 
 app.MapGet("/brew-coffee", async (HttpContext context) =>
 {
@@ -42,7 +50,7 @@ app.MapGet("/brew-coffee", async (HttpContext context) =>
     }
     else
     {
-        //exception handling here is pretty basic  - lots can go wrong here. However, we are keeping things simple here, and don't really care what goes wrong.
+    
         try
         {
 
@@ -76,7 +84,7 @@ app.MapGet("/brew-coffee", async (HttpContext context) =>
                 var response = new Response
                 {
                     Message = $"{msg}",
-                    Prepared = GetIso8601Timestamp(),
+                    Prepared = MelbourneUTCDateTime(),
                
                 };
 
@@ -85,10 +93,11 @@ app.MapGet("/brew-coffee", async (HttpContext context) =>
         }         
         catch
         {            
-            return Results.StatusCode(500); // Internal Server Error for other exceptions
+            return Results.StatusCode(500); 
         }
     }
 });
 
+ 
 
 app.Run();
